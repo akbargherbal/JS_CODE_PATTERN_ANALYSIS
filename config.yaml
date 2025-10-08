@@ -1,0 +1,55 @@
+# ========================================
+# JS Pattern Mining Orchestration Config
+# ========================================
+
+# General Settings
+# ----------------
+max_repos: null  # null = process all repos, or set integer for testing (e.g., 5)
+checkpoint_frequency: 10  # Save checkpoint every N repos
+
+# Repository Processing
+# ---------------------
+retry_attempts: 3  # Max retry attempts for failed repos
+stuck_timeout_hours: 1  # Consider repo stuck after this duration
+
+# Git Cloning Settings
+# --------------------
+clone_timeout_sec: 300  # 5 minutes
+clone_depth: 1  # Shallow clone
+temp_dir: ./temp  # Where to clone repos temporarily
+
+# Pattern Mining Settings
+# ------------------------
+max_file_size_mb: 2.0  # Skip files larger than this
+min_pattern_frequency: 2  # Minimum frequency to include pattern
+
+# Aggregation Settings
+# --------------------
+min_repo_count: 2  # Pattern must appear in at least N repos
+min_total_frequency: 5  # Pattern must have total frequency >= N
+top_k_export: 200  # Export top-K patterns in reports
+
+# GitHub Rate Limiting
+# --------------------
+github_requests_per_hour: 5000  # With token: 5000, without: 60
+rate_limit_buffer: 10  # Pause when remaining requests < buffer
+
+# Directory Settings
+# ------------------
+data_dir: ./data
+results_dir: ./results
+checkpoint_dir: ./data/checkpoints
+backup_dir: ./data/backups
+patterns_dir: ./data/patterns_by_repo
+logs_dir: ./logs
+
+# Input/Output Files
+# ------------------
+repo_links_file: ./data/DF_REPO_LINKS.pkl
+repo_queue_file: ./data/repo_queue.pkl
+
+# Logging
+# -------
+log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+log_format: "%(asctime)s [%(levelname)s] %(message)s"
+log_date_format: "%Y-%m-%d %H:%M:%S"

@@ -64,3 +64,27 @@ venv.bak/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+# ========================================
+# Project-Specific Ignores
+# ========================================
+
+# Temporary cloned repositories
+temp/
+*.tmp
+
+# Log files
+logs/
+*.log
+
+# Backup files (can be large)
+data/backups/
+
+# Pattern data files (optional - uncomment if too large to commit)
+# data/patterns_by_repo/*.pkl
+
+# Checkpoints (optional - you may want to commit these)
+# data/checkpoints/
+
+# Results (optional - you may want to commit final results)
+# results/

@@ -1,0 +1,14 @@
+# Core Dependencies
+pandas
+tree-sitter
+tree-sitter-javascript
+tree-sitter-typescript
+tqdm
+PyYAML
+requests
+python-dotenv
+# For analysis/advanced features
+matplotlib
+scikit-learn
+sentence_transformers
+pyarrow
