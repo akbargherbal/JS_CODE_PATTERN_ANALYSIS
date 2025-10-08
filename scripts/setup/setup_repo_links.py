@@ -1,19 +1,24 @@
 """
 Setup Script - Create or Locate DF_REPO_LINKS.pkl
-Place this in: JS_CODE_PATTERN_ANALYSIS/setup_repo_links.py
+This script is designed to be run from anywhere in the project.
 """
 import pandas as pd
 from pathlib import Path
 import sys
+import shutil
+
+# Define the project root relative to this script's location
+# This script is in ./scripts/setup/, so the root is three levels up.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / 'data'
 
 
 def find_existing_file():
     """Search for DF_REPO_LINKS.pkl in common locations"""
+    # Prioritize the canonical location
     search_paths = [
-        Path('./data/DF_REPO_LINKS.pkl'),
-        Path('./DF_REPO_LINKS.pkl'),
-        Path('../DF_REPO_LINKS.pkl'),
-        Path('../data/DF_REPO_LINKS.pkl'),
+        DATA_DIR / 'DF_REPO_LINKS.pkl',
+        PROJECT_ROOT / 'DF_REPO_LINKS.pkl',
     ]
     
     print("🔍 Searching for existing DF_REPO_LINKS.pkl...")
@@ -26,7 +31,7 @@ def find_existing_file():
     return None
 
 
-def inspect_file(filepath):
+def inspect_file(filepath: Path):
     """Show contents of existing file"""
     try:
         df = pd.read_pickle(filepath)
@@ -35,7 +40,6 @@ def inspect_file(filepath):
         print(f"\nFirst 5 rows:")
         print(df.head())
         
-        # Check if it has 'REPO' column (expected format)
         if 'REPO' in df.columns:
             print(f"\n✅ File has expected 'REPO' column")
             return df
@@ -48,21 +52,18 @@ def inspect_file(filepath):
         return None
 
 
-def copy_to_data_dir(source_path):
-    """Copy file to data/ directory"""
-    data_dir = Path('./data')
-    data_dir.mkdir(exist_ok=True)
+def copy_to_data_dir(source_path: Path):
+    """Copy file to the correct data/ directory"""
+    DATA_DIR.mkdir(exist_ok=True)
+    target_path = DATA_DIR / 'DF_REPO_LINKS.pkl'
     
-    target_path = data_dir / 'DF_REPO_LINKS.pkl'
-    
-    if target_path.exists():
+    if target_path.exists() and source_path.resolve() != target_path.resolve():
         print(f"\n⚠️  Target already exists: {target_path}")
         response = input("Overwrite? (y/n): ")
         if response.lower() != 'y':
             print("Cancelled")
             return False
     
-    import shutil
     shutil.copy(source_path, target_path)
     print(f"\n✅ Copied to: {target_path}")
     return True
@@ -87,16 +88,14 @@ def create_sample_file():
     
     df = pd.DataFrame({'REPO': sample_repos})
     
-    data_dir = Path('./data')
-    data_dir.mkdir(exist_ok=True)
-    
-    output_path = data_dir / 'DF_REPO_LINKS.pkl'
+    DATA_DIR.mkdir(exist_ok=True)
+    output_path = DATA_DIR / 'DF_REPO_LINKS.pkl'
     df.to_pickle(output_path)
     
     print(f"✅ Created sample file: {output_path}")
     print(f"   Contains {len(df)} repositories")
     print("\n⚠️  NOTE: This is a SAMPLE file for testing.")
-    print("   Replace it with your actual 170-repo list!")
+    print("   Replace it with your actual repo list when ready!")
     
     return output_path
 
@@ -104,9 +103,9 @@ def create_sample_file():
 def create_from_csv():
     """Create from a CSV file"""
     print("\n📄 Create from CSV file")
-    csv_path = input("Enter path to CSV file (with 'url' or 'repo' column): ")
+    csv_path_str = input("Enter path to CSV file (with 'url' or 'repo' column): ")
     
-    csv_path = Path(csv_path.strip())
+    csv_path = Path(csv_path_str.strip())
     if not csv_path.exists():
         print(f"❌ File not found: {csv_path}")
         return None
@@ -115,7 +114,6 @@ def create_from_csv():
         df = pd.read_csv(csv_path)
         print(f"\nColumns found: {list(df.columns)}")
         
-        # Try to find URL column
         url_col = None
         for col in df.columns:
             if col.lower() in ['repo', 'url', 'repository', 'git', 'github']:
@@ -130,13 +128,10 @@ def create_from_csv():
             print(f"❌ Column '{url_col}' not found")
             return None
         
-        # Create DataFrame with 'REPO' column
         df_repos = pd.DataFrame({'REPO': df[url_col]})
         
-        # Save to data/
-        data_dir = Path('./data')
-        data_dir.mkdir(exist_ok=True)
-        output_path = data_dir / 'DF_REPO_LINKS.pkl'
+        DATA_DIR.mkdir(exist_ok=True)
+        output_path = DATA_DIR / 'DF_REPO_LINKS.pkl'
         
         df_repos.to_pickle(output_path)
         print(f"\n✅ Created: {output_path}")
@@ -153,18 +148,11 @@ def create_from_list():
     """Manually paste a list of repo URLs"""
     print("\n📝 Create from manual list")
     print("Paste repository URLs (one per line)")
-    print("Press Ctrl+D (Unix) or Ctrl+Z (Windows) when done:")
+    print("Press Ctrl+D (Unix) or Ctrl+Z+Enter (Windows) when done:")
     print()
     
-    repos = []
-    try:
-        while True:
-            line = input()
-            line = line.strip()
-            if line:
-                repos.append(line)
-    except EOFError:
-        pass
+    repos = sys.stdin.read().strip().splitlines()
+    repos = [line.strip() for line in repos if line.strip()]
     
     if not repos:
         print("❌ No repositories entered")
@@ -172,9 +160,8 @@ def create_from_list():
     
     df = pd.DataFrame({'REPO': repos})
     
-    data_dir = Path('./data')
-    data_dir.mkdir(exist_ok=True)
-    output_path = data_dir / 'DF_REPO_LINKS.pkl'
+    DATA_DIR.mkdir(exist_ok=True)
+    output_path = DATA_DIR / 'DF_REPO_LINKS.pkl'
     
     df.to_pickle(output_path)
     print(f"\n✅ Created: {output_path}")
@@ -184,28 +171,27 @@ def create_from_list():
 
 
 def main():
+    """Main execution flow for the setup wizard."""
     print("=" * 70)
     print("  🔧 DF_REPO_LINKS.pkl Setup Wizard")
     print("=" * 70)
     
-    # Try to find existing file
     existing = find_existing_file()
     
     if existing:
         df = inspect_file(existing)
         if df is not None:
-            target = Path('./data/DF_REPO_LINKS.pkl')
-            if existing.absolute() == target.absolute():
+            target = DATA_DIR / 'DF_REPO_LINKS.pkl'
+            if existing.resolve() == target.resolve():
                 print("\n✅ File is already in the correct location!")
-                print("\nYou can now run: python validate_foundation.py")
+                print("\nYou can now run: python scripts/validation/validate_foundation.py")
                 return
             else:
                 copy_to_data_dir(existing)
                 print("\n✅ Setup complete!")
-                print("\nYou can now run: python validate_foundation.py")
+                print("\nYou can now run: python scripts/validation/validate_foundation.py")
                 return
     
-    # File not found - offer options
     print("\n" + "=" * 70)
     print("  Options:")
     print("=" * 70)
@@ -222,36 +208,39 @@ def main():
         if path:
             print("\n✅ Setup complete!")
             print("\nNext steps:")
-            print("  1. Run: python validate_foundation.py")
-            print("  2. Replace sample file with your 170 repos when ready")
+            print("  1. Run: python scripts/validation/validate_foundation.py")
+            print("  2. Replace sample file with your full repo list when ready")
     
     elif choice == '2':
         path = create_from_csv()
         if path:
             print("\n✅ Setup complete!")
-            print("\nYou can now run: python validate_foundation.py")
+            print("\nYou can now run: python scripts/validation/validate_foundation.py")
     
     elif choice == '3':
         path = create_from_list()
         if path:
             print("\n✅ Setup complete!")
-            print("\nYou can now run: python validate_foundation.py")
+            print("\nYou can now run: python scripts/validation/validate_foundation.py")
     
     elif choice == '4':
         print("\n📝 Manual creation instructions:")
-        print("\nCreate a file at: data/DF_REPO_LINKS.pkl")
+        print(f"\nCreate a file at: {DATA_DIR / 'DF_REPO_LINKS.pkl'}")
         print("\nUsing Python:")
         print("```python")
         print("import pandas as pd")
+        print("from pathlib import Path")
         print()
         print("repos = [")
         print("    'https://github.com/facebook/react.git',")
         print("    'https://github.com/vuejs/vue.git',")
-        print("    # ... add your 170 repos ...")
+        print("    # ... add your repos ...")
         print("]")
         print()
         print("df = pd.DataFrame({'REPO': repos})")
-        print("df.to_pickle('data/DF_REPO_LINKS.pkl')")
+        print("data_dir = Path('data')")
+        print("data_dir.mkdir(exist_ok=True)")
+        print("df.to_pickle(data_dir / 'DF_REPO_LINKS.pkl')")
         print("```")
     
     else:
