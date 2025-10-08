@@ -9,10 +9,15 @@ import json
 
 import pandas as pd
 
-# Add scripts to path
-sys.path.insert(0, str(Path(__file__).parent / "scripts"))
 
-from scripts.pattern_aggregator import PatternAggregator
+# Add project root to path
+import sys
+
+project_root = Path(__file__).resolve().parents[2]
+print(f"Adding {project_root} to path")
+sys.path.insert(0, str(project_root))
+
+from src.js_pattern_analyzer.pattern_aggregator import PatternAggregator
 
 
 def print_section(title):
@@ -59,10 +64,42 @@ def create_mock_pattern_files():
             ],
             "frequency": [45, 32, 28, 15],
             "examples_json": [
-                json.dumps([{"file_path": "App.js", "line_number": 10, "concrete_code": "const [count, setCount] = useState(0)"}]),
-                json.dumps([{"file_path": "List.js", "line_number": 5, "concrete_code": "items.map(item => <Item key={item.id} />)"}]),
-                json.dumps([{"file_path": "utils.js", "line_number": 1, "concrete_code": "import React from 'react'"}]),
-                json.dumps([{"file_path": "App.js", "line_number": 50, "concrete_code": "export default App"}]),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "App.js",
+                            "line_number": 10,
+                            "concrete_code": "const [count, setCount] = useState(0)",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "List.js",
+                            "line_number": 5,
+                            "concrete_code": "items.map(item => <Item key={item.id} />)",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "utils.js",
+                            "line_number": 1,
+                            "concrete_code": "import React from 'react'",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "App.js",
+                            "line_number": 50,
+                            "concrete_code": "export default App",
+                        }
+                    ]
+                ),
             ],
         }
     )
@@ -97,10 +134,42 @@ def create_mock_pattern_files():
             ],
             "frequency": [28, 22, 18, 12],
             "examples_json": [
-                json.dumps([{"file_path": "data.js", "line_number": 15, "concrete_code": "data.map(x => x * 2)"}]),
-                json.dumps([{"file_path": "index.js", "line_number": 1, "concrete_code": "import Vue from 'vue'"}]),
-                json.dumps([{"file_path": "api.js", "line_number": 8, "concrete_code": "const response = await fetch(url)"}]),
-                json.dumps([{"file_path": "utils.js", "line_number": 20, "concrete_code": "arr.filter(x => x > 0)"}]),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "data.js",
+                            "line_number": 15,
+                            "concrete_code": "data.map(x => x * 2)",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "index.js",
+                            "line_number": 1,
+                            "concrete_code": "import Vue from 'vue'",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "api.js",
+                            "line_number": 8,
+                            "concrete_code": "const response = await fetch(url)",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "utils.js",
+                            "line_number": 20,
+                            "concrete_code": "arr.filter(x => x > 0)",
+                        }
+                    ]
+                ),
             ],
         }
     )
@@ -135,10 +204,42 @@ def create_mock_pattern_files():
             ],
             "frequency": [35, 25, 20, 10],
             "examples_json": [
-                json.dumps([{"file_path": "main.js", "line_number": 1, "concrete_code": "import express from 'express'"}]),
-                json.dumps([{"file_path": "helpers.js", "line_number": 10, "concrete_code": "function add(a, b) { return a + b }"}]),
-                json.dumps([{"file_path": "auth.js", "line_number": 15, "concrete_code": "if (user.isAdmin) { ... }"}]),
-                json.dumps([{"file_path": "logger.js", "line_number": 5, "concrete_code": "logs.forEach(log => console.log(log))"}]),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "main.js",
+                            "line_number": 1,
+                            "concrete_code": "import express from 'express'",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "helpers.js",
+                            "line_number": 10,
+                            "concrete_code": "function add(a, b) { return a + b }",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "auth.js",
+                            "line_number": 15,
+                            "concrete_code": "if (user.isAdmin) { ... }",
+                        }
+                    ]
+                ),
+                json.dumps(
+                    [
+                        {
+                            "file_path": "logger.js",
+                            "line_number": 5,
+                            "concrete_code": "logs.forEach(log => console.log(log))",
+                        }
+                    ]
+                ),
             ],
         }
     )
@@ -251,7 +352,9 @@ def test_aggregation():
                 return False
 
             if row["total_frequency"] != 85:  # 28 + 22 + 35
-                print(f"   ❌ Expected total_frequency=85, got {row['total_frequency']}")
+                print(
+                    f"   ❌ Expected total_frequency=85, got {row['total_frequency']}"
+                )
                 return False
 
             print(f"   ✅ Aggregation math is correct!")
@@ -360,9 +463,7 @@ def test_exports():
         # Export top 5 for testing
         print(f"\n💾 Exporting top 5 patterns...")
 
-        output_paths = aggregator.export_top_k(
-            df_agg, k=5, output_dir=test_results_dir
-        )
+        output_paths = aggregator.export_top_k(df_agg, k=5, output_dir=test_results_dir)
 
         print(f"\n📁 Checking exported files:")
 
@@ -389,7 +490,9 @@ def test_exports():
             return False
 
         if len(json_data["patterns"]) != 5:
-            print(f"   ❌ JSON should have 5 patterns, got {len(json_data['patterns'])}")
+            print(
+                f"   ❌ JSON should have 5 patterns, got {len(json_data['patterns'])}"
+            )
             return False
 
         print(f"   ✅ JSON structure is valid")
@@ -413,9 +516,7 @@ def test_exports():
         df_loaded = pd.read_parquet(parquet_path)
 
         if len(df_loaded) != len(df_agg):
-            print(
-                f"   ❌ Parquet should have {len(df_agg)} rows, got {len(df_loaded)}"
-            )
+            print(f"   ❌ Parquet should have {len(df_agg)} rows, got {len(df_loaded)}")
             return False
 
         print(f"   ✅ Parquet can be loaded correctly")

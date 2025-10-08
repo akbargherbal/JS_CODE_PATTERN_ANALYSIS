@@ -11,8 +11,14 @@ import time
 
 import pandas as pd
 
-# Import the wrapper
-from pattern_miner_wrapper import (
+
+# Add project root to path
+import sys
+
+project_root = Path(__file__).resolve().parents[2]
+print(f"Adding {project_root} to path")
+sys.path.insert(0, str(project_root))
+from src.js_pattern_analyzer.pattern_miner_wrapper import (
     mine_repository_to_dataframe,
     validate_patterns_dataframe,
 )
@@ -30,11 +36,14 @@ def test_import():
     print_section("TEST 1: Import Validation")
 
     try:
-        from pattern_miner_wrapper import mine_repository_to_dataframe
+        from src.js_pattern_analyzer.pattern_miner_wrapper import (
+            mine_repository_to_dataframe,
+            validate_patterns_dataframe,
+        )
 
         print("✅ Successfully imported mine_repository_to_dataframe")
 
-        from pattern_miner import PatternMiner
+        from src.js_pattern_analyzer.pattern_miner import PatternMiner
 
         print("✅ Successfully imported PatternMiner")
 

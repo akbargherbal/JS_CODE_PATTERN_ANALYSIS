@@ -10,7 +10,7 @@ from typing import Tuple, Dict
 import pandas as pd
 
 # Import the existing PatternMiner
-from pattern_miner import PatternMiner
+from .pattern_miner import PatternMiner
 
 
 def mine_repository_to_dataframe(
