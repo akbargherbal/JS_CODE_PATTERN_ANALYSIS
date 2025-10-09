@@ -6,6 +6,7 @@ import time
 import os
 import stat
 
+
 class RepoCloner:
     """Handles git clone and cleanup operations."""
 
@@ -42,10 +43,12 @@ class RepoCloner:
                 self.cleanup(target_dir)
 
             command = [
-                "git", "clone",
-                "--depth", str(self.clone_depth),
+                "git",
+                "clone",
+                "--depth",
+                str(self.clone_depth),
                 repo_url,
-                str(target_dir)
+                str(target_dir),
             ]
 
             result = subprocess.run(
@@ -53,7 +56,7 @@ class RepoCloner:
                 capture_output=True,
                 text=True,
                 timeout=self.clone_timeout,
-                check=False  # Don't raise exception on non-zero exit
+                check=False,  # Don't raise exception on non-zero exit
             )
 
             if result.returncode != 0:
@@ -76,7 +79,7 @@ class RepoCloner:
                 try:
                     os.chmod(filepath, stat.S_IWRITE)
                 except Exception:
-                    pass # Ignore errors, this is a best-effort fix
+                    pass  # Ignore errors, this is a best-effort fix
 
     def cleanup(self, repo_path: Path) -> Tuple[bool, Optional[str]]:
         """
@@ -99,10 +102,10 @@ class RepoCloner:
             except PermissionError as e:
                 if attempt < max_attempts - 1:
                     time.sleep(1)  # Wait for 1 second
-                    self._fix_permissions(repo_path) # Attempt to fix permissions
+                    self._fix_permissions(repo_path)  # Attempt to fix permissions
                 else:
                     error = f"Failed to remove directory {repo_path} after {max_attempts} attempts: {e}"
                     return False, error
-        
+
         # Fallback in case loop finishes unexpectedly
         return False, f"Cleanup failed for {repo_path} after all attempts."
